@@ -63,7 +63,7 @@ const PlanTrip = () => {
   
     // Define UBC and SFU campus coordinates
     const campuses = [
-      { name: "UBC", coords: [49.2606, -123.2460] }, // UBC
+      { name: "ubc", coords: [49.2606, -123.2460] }, // UBC
       // { name: "SFU", coords: [49.2796, -122.9199] }, // SFU
     ];
   
@@ -74,13 +74,13 @@ const PlanTrip = () => {
     try {
       if (nearCampus) {
         console.log(`Center is near ${nearCampus.name}, calling our own API to get live data`);
-        const customAPI = `OUR_URL`;
+        const customAPI = `http://127.0.0.1:8000/parking/ubc`;
         
         // Fetch Mapbox API response
         const response = await fetch(customAPI);
         const data = await response.json();
         // Handle Mapbox data as needed (template for now)
-        console.log("Mapbox API data:", data);
+        console.log("custom API data:", data);
         return; // Exit early as we've handled the alternative API
       }
   
@@ -116,6 +116,7 @@ const PlanTrip = () => {
         );
         const closestParkingLots = closestFive.map((record: any, index: number) => ({
           coordinates: record.fields.geom.coordinates,
+          spaces: record.fields?.spaces ?? 'Space data not available for this lot', 
           distance: `${haversineDistance(center, record.fields.geom.coordinates).toFixed(1)} km`,
           name: record.fields.meter_id || "Parking Meter",
           rates: [
@@ -318,8 +319,9 @@ const PlanTrip = () => {
         <Text style={{ fontSize: 16, color: "#555", marginBottom: 8 }}>
           📍 Distance: <Text style={{ fontWeight: "bold", color: "#000" }}>{selectedParkingLot.distance}</Text>
         </Text>
-        <Text style={{ fontSize: 16, color: "#555", marginBottom: 8 }}>
           🏠 Address: <Text style={{ fontWeight: "bold", color: "#000" }}>{selectedParkingLot.address}</Text>
+          <Text style={{ fontSize: 16, color: "#555", marginBottom: 8 }}>
+          🏠 Spaces: <Text style={{ fontWeight: "bold", color: "#000" }}>{selectedParkingLot?.spaces}</Text>
         </Text>
         <Text style={{ fontSize: 18, fontWeight: "bold", color: "#333", marginBottom: 12 }}>
           💵 Rates:
