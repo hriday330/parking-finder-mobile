@@ -79,7 +79,7 @@ const PlanTrip = () => {
         }, 400);
         
         closestParkingLots = [{
-          coordinates: [center[0], center[1]],
+          coordinates: [49.2606, -123.2460],
           spaces: 8 ?? 'Space data not available for this lot', 
           distance: `0.3km`,
           name: "Demo parking lot",
@@ -93,6 +93,10 @@ const PlanTrip = () => {
           timeInEffect: '9am-6pm',
           address:'UBC'
         }];
+
+        setParkingLots(closestParkingLots);
+        return;
+
       }
   
       // Otherwise, call the default Vancouver parking meters API
