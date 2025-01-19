@@ -62,15 +62,20 @@ const TimePicker = ({ value, onChange, label = 'Select Time', labelStyle, inputS
 const styles = StyleSheet.create({
   container: {
     marginBottom: 10,
+    backgroundColor: 'rgba(192, 211, 115, 1)',
+    borderRadius: 20,
+    paddingHorizontal: 35,
+    paddingVertical: 20,
   },
   label: {
     fontSize: 20,
-    fontWeight: '500',
+    alignSelf: 'center',
+    fontWeight: 'bold',
     color: '#4A4A4A',
     marginBottom: 5,
   },
   inputContainer: {
-    backgroundColor: '#F0F0F0',
+    backgroundColor: 'rgba(192, 211, 115, 1)',
     color: 'black',
     padding: 10,
     borderRadius: 8,
@@ -80,7 +85,8 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   timeText: {
-    fontSize: 20,
+    fontSize: 30,
+    fontWeight: 'bold',
     color: 'black',
   },
   modalContainer: {

@@ -189,7 +189,7 @@ const PlanTrip = () => {
         />
       </View>
       <View style={{ marginBottom: 16, paddingHorizontal: 18, paddingTop: 36}}>
-        <Text style={{ fontSize: 36, paddingVertical: 6,fontWeight: "bold" }}>Destination</Text>
+        <Text style={{ fontSize: 36, paddingVertical: 6, fontWeight: "bold" }}>Destination</Text>
         <SearchBar
               value={searchItem}
               onSearch={handleSearch}
@@ -217,7 +217,7 @@ const PlanTrip = () => {
       </View>
 
       <MapView
-        style={{ height: 300, paddingHorizontal: 14, paddingTop: 16, }}
+        style={{ height: 300, paddingHorizontal: 14, paddingTop: 16, borderRadius: 20 }}
         region={mapRegion}
         onRegionChangeComplete={setMapRegion}
       >
@@ -239,7 +239,8 @@ const PlanTrip = () => {
         <View
         style={{
           marginTop: 16,
-          padding: 16,
+          marginHorizontal: 10,
+          padding: 20,
           backgroundColor: "#f9f9f9",
           borderRadius: 12,
           borderWidth: 1,
@@ -289,14 +290,14 @@ const PlanTrip = () => {
         <TouchableOpacity
           style={{
             marginTop: 16,
-            backgroundColor: "#007AFF",
+            backgroundColor: "rgba(192, 211, 115, 1)",
             padding: 12,
             borderRadius: 8,
             alignItems: "center",
           }}
           onPress={() => {}}
         >
-          <Text style={{ fontSize: 16, fontWeight: "600", color: "white" }}>
+          <Text style={{ fontSize: 16, fontWeight: "600", color: "black" }}>
             Let’s go!
           </Text>
         </TouchableOpacity>

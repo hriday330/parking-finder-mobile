@@ -19,10 +19,7 @@ const Home = () => {
           style={styles.bannerImage}
         />
       </View>
-      <View style={{height: '70%', alignSelf: 'center'}}>
-      <StyledButton labelText="Find a spot" onPress={() => {}}/>
-      </View>
-      <View style={{alignSelf: 'center', height:'auto'}}>
+      <View style={{alignSelf: 'center', marginTop:30, height:"90%", width:'100%'}}>
       <Image
           source={require('../assets/images/city.png')}
           style={styles.bannerImage}

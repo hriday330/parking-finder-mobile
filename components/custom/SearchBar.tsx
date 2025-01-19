@@ -32,6 +32,7 @@ function SearchBar({
 const styles = StyleSheet.create({
   container: {
     flexDirection: "row",
+    marginTop: 15,
     alignItems: "center",
   },
   input: {
@@ -47,7 +48,7 @@ const styles = StyleSheet.create({
   button: {
     paddingVertical: 10,
     paddingHorizontal: 20,
-    backgroundColor: "#3498db",
+    backgroundColor: "'rgba(192, 211, 115, 1)",
     borderRadius: 8,
     justifyContent: "center",
     alignItems: "center",
@@ -55,6 +56,7 @@ const styles = StyleSheet.create({
   buttonText: {
     color: "black",
     fontSize: 16,
+    fontWeight: 'bold'
   },
 });
 

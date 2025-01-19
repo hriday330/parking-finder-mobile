@@ -34,9 +34,9 @@ export default function TabLayout() {
         }}
       />
        <Tabs.Screen
-        name="location"
+        name="locations"
         options={{
-          title: 'Location',
+          title: 'Locations',
           tabBarIcon: ({ color }) => <IconSymbol size={28} name="house.fill" color={color} />,
         }}
       />
