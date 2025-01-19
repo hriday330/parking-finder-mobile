@@ -18,7 +18,7 @@ const PlanTrip = () => {
   });
   const [parkingLotMarkers, setParkingLotMarkers] = useState([]);
   const [parkingLots, setParkingLots] = useState([]);
-  const [selectedParkingLot, setSelectedParkingLot] = useState<Record<string,unknown>| null>(null);
+  const [selectedParkingLot, setSelectedParkingLot] = useState<Record<string,any>| null>(null);
 
   const debounce = (func: (...args: any[]) => void, delay: number) => {
     let timer: NodeJS.Timeout;
@@ -62,7 +62,7 @@ const PlanTrip = () => {
 
       if (data.records && data.records.length > 0) {
         const closestFive = data.records.slice(0,5);
-        const addresses = await Promise.all(closestFive.map(async (item) => {
+        const addresses = await Promise.all(closestFive.map(async (item:any) => {
           const {coordinates} = item.fields.geom;
           const addr = await getAddressFromCoordinates(coordinates[0], coordinates[1]);
           return addr;
@@ -220,7 +220,7 @@ const PlanTrip = () => {
         region={mapRegion}
         onRegionChangeComplete={setMapRegion}
       >
-        {parkingLots.map((lot, index) => (
+        {parkingLots.map((lot: any, index) => (
           <Marker
             key={index}
             coordinate={{
@@ -272,7 +272,7 @@ const PlanTrip = () => {
         <Text style={{ fontSize: 18, fontWeight: "bold", color: "#333", marginBottom: 12 }}>
           💵 Rates:
         </Text>
-        {selectedParkingLot.rates.map((rate, index) => (
+        {selectedParkingLot.rates.map((rate:any, index:number) => (
           <Text
             key={index}
             style={{
