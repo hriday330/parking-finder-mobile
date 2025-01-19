@@ -11,6 +11,7 @@ const PlanTrip = () => {
   const [startTime, setStartTime] = useState("12:00");
   const [endTime, setEndTime] = useState("12:00");
   const [suggestions, setSuggestions] = useState([]);
+  const [selectedSearch, setSelectedSearch] = useState<"cars" | "motorcycles" | "disabled">("cars");
   const [mapRegion, setMapRegion] = useState({
     latitude: 49.26517,
     longitude: -123.16652,
@@ -63,7 +64,7 @@ const PlanTrip = () => {
     // Define UBC and SFU campus coordinates
     const campuses = [
       { name: "UBC", coords: [49.2606, -123.2460] }, // UBC
-      { name: "SFU", coords: [49.2796, -122.9199] }, // SFU
+      // { name: "SFU", coords: [49.2796, -122.9199] }, // SFU
     ];
   
     const nearCampus = campuses.find((campus) =>
@@ -84,8 +85,16 @@ const PlanTrip = () => {
       }
   
       // Otherwise, call the default Vancouver parking meters API
+      let vancouverDataSource;
+      if (selectedSearch === "disabled") {
+        vancouverDataSource = 'disabled URL'
+      } else if (selectedSearch === "motorcycles") {
+        vancouverDataSource = 'motorcycles URL'
+      } else {
+        vancouverDataSource = `https://opendata.vancouver.ca/api/records/1.0/search/?dataset=parking-meters&geofilter.distance=${center[1]},${center[0]},2000`
+      }
       const response = await fetch(
-        `https://opendata.vancouver.ca/api/records/1.0/search/?dataset=parking-meters&geofilter.distance=${center[1]},${center[0]},2000`
+        vancouverDataSource
       );
   
       const data = await response.json();
@@ -240,12 +249,13 @@ const PlanTrip = () => {
             keyExtractor={(item, index) => index.toString()}
           />
         )}
+        <Text> Selected search: {selectedSearch} </Text>
       </View>
 
       <View style={{ flexDirection: "row", justifyContent: "space-between", paddingHorizontal: 18, paddingTop: 36 }}>
-        <IconButton image={require('../../assets/images/handicap.webp')} />
-        <IconButton image={require('../../assets/images/motorcycles.webp')} />
-        <IconButton image={require('../../assets/images/cars.webp')} />
+        <IconButton image={require('../../assets/images/handicap.webp')} onPress={() => setSelectedSearch("disabled")} />
+        <IconButton image={require('../../assets/images/motorcycles.webp')} onPress={() => setSelectedSearch("motorcycles")} />
+        <IconButton image={require('../../assets/images/cars.webp')} onPress={() => setSelectedSearch("cars")} />
       </View>
 
       <MapView
