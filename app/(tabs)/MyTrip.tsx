@@ -18,7 +18,7 @@ const PlanTrip = () => {
   });
   const [parkingLotMarkers, setParkingLotMarkers] = useState([]);
   const [parkingLots, setParkingLots] = useState([]);
-  const [selectedParkingLot, setSelectedParkingLot] = useState(null);
+  const [selectedParkingLot, setSelectedParkingLot] = useState<Record<string,unknown>| null>(null);
 
   const debounce = (func: (...args: any[]) => void, delay: number) => {
     let timer: NodeJS.Timeout;
@@ -29,8 +29,6 @@ const PlanTrip = () => {
   };
 
   const handleParkingLotClick = (lot: any) => {
-    const { coordinates } = lot;
-    // const address = await getAddressFromCoordinates(coordinates[0], coordinates[1]);
     setSelectedParkingLot(lot);
   };
 
@@ -63,9 +61,14 @@ const PlanTrip = () => {
       const data = await response.json();
 
       if (data.records && data.records.length > 0) {
-        const closestParkingLots = data.records
-          .slice(0, 5)
-          .map((record: any) => ({
+        const closestFive = data.records.slice(0,5);
+        const addresses = await Promise.all(closestFive.map(async (item) => {
+          const {coordinates} = item.fields.geom;
+          const addr = await getAddressFromCoordinates(coordinates[0], coordinates[1]);
+          return addr;
+        }));
+        const closestParkingLots = closestFive
+          .map((record: any, index: number) => ({
             coordinates: record.fields.geom.coordinates,
             distance: `${haversineDistance(center, record.fields.geom.coordinates).toFixed(1)} km`,
             name: record.fields.meter_id || "Parking Meter",
@@ -77,7 +80,7 @@ const PlanTrip = () => {
               { type: "Sun 9a-6p", rate: record.fields.r_su_9a_6p },
             ],
             timeInEffect: record.fields.timeineffe,
-            address: record.fields.geo_local_area,
+            address: addresses[index]
           }));
 
         setParkingLots(closestParkingLots);
@@ -120,19 +123,34 @@ const PlanTrip = () => {
     }
   };
 
-  const handleSuggestionClick = (suggestion: any) => {
+  const handleSuggestionClick = async (suggestion: any) => {
     const { center, place_name } = suggestion;
 
     setSearchItem(place_name);
     setSuggestions([]);
+    try {
+      const response = await fetch(
+        `https://api.mapbox.com/geocoding/v5/mapbox.places/${encodeURIComponent(
+          searchItem
+        )}.json?access_token=${YOUR_MAPBOX_ACCESS_TOKEN}`
+      );
+      const data = await response.json();
 
-    setMapRegion({
-      ...mapRegion,
-      latitude: center[1],
-      longitude: center[0],
-    });
+      if (data.features && data.features.length > 0) {
+        const {center} = data.features[0]
+        setMapRegion({
+          ...mapRegion,
+          latitude: center[1],
+          longitude: center[0],
+        });
 
-    fetchParkingLots(center);
+        await fetchParkingLots(center);
+      } else {
+        Alert.alert("Location not found");
+      }
+    } catch (error) {
+      console.error("Error fetching location:", error);
+    }
   };
 
   useEffect(() => {
@@ -142,7 +160,7 @@ const PlanTrip = () => {
   }, [mapRegion]);
 
   const getAddressFromCoordinates = async (longitude: number, latitude: number) => {
-    const url = `https://api.mapbox.com/geocoding/v5/mapbox.places/${longitude},${latitude}.json?access_token=${mapboxgl.accessToken}`;
+    const url = `https://api.mapbox.com/geocoding/v5/mapbox.places/${longitude},${latitude}.json?access_token=${YOUR_MAPBOX_ACCESS_TOKEN}`;
   
     try {
       const response = await fetch(url);
@@ -191,7 +209,7 @@ const PlanTrip = () => {
       </View>
 
       <MapView
-        style={{ height: 300, marginTop: 16 }}
+        style={{ height: 300 }}
         region={mapRegion}
         onRegionChangeComplete={setMapRegion}
       >
