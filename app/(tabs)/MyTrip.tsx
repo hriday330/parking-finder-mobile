@@ -95,6 +95,7 @@ const PlanTrip = () => {
         }];
 
         setParkingLots(closestParkingLots);
+        setSelectedParkingLot(closestParkingLots[0])
         return;
 
       }
