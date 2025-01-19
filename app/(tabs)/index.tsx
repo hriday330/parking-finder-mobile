@@ -4,10 +4,7 @@ import Location from '@/components/Location';
 
 export default function HomeScreen() {
   return (
-    <View
-      >
       <Location/>
-    </View>
   );
 }
 

@@ -60,11 +60,7 @@ const Location = () => {
     <ScrollView style={styles.container}>
       <View style={styles.content}>
         <View style={styles.mascotContainer}>
-          <Image
-            source={require('../assets/images/mascot.webp')}
-            style={styles.mascotImage}
-            resizeMode="contain"
-          />
+          
         </View>
 
         <View style={styles.mainContent}>
@@ -103,9 +99,11 @@ const cardWidth = (width - 48) / 3;
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    paddingTop: 50,
+    backgroundColor: '#FCECAB'
   },
   content: {
-    flexDirection: 'row',
+    flexDirection: 'column',
     padding: 16,
   },
   mascotContainer: {

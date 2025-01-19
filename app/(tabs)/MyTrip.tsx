@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from "react";
-import { View, Text, TextInput, Button, FlatList, TouchableOpacity, Alert } from "react-native";
+import { View, Text, ScrollView, TextInput, Button, FlatList, TouchableOpacity, Alert } from "react-native";
 import MapView, { Marker } from "react-native-maps";
 import TimePicker from "@/components/custom/TimePicker"; // Custom TimePicker component
 import SearchBar from "@/components/custom/SearchBar";
@@ -179,7 +179,7 @@ const PlanTrip = () => {
   };
 
   return (
-    <View style={{ flex: 1, padding: 16, backgroundColor: 'white' }}>
+    <ScrollView style={{ flex: 1, paddingHorizontal: 18, paddingTop: 56, backgroundColor: '#FCECAB' }}>
       <View style={{ marginBottom: 16 }}>
         <Text style={{ fontSize: 24, fontWeight: "bold" }}>Destination</Text>
         <SearchBar
@@ -257,8 +257,7 @@ const PlanTrip = () => {
           <Button title="Let's go!" onPress={() => {}} />
         </View>
       )}
-      <Text>{selectedParkingLot ? 'yes' : 'no'}</Text>
-    </View>
+    </ScrollView>
   );
 };
 
