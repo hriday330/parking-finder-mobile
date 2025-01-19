@@ -180,6 +180,7 @@ const PlanTrip = () => {
 
   return (
     <ScrollView style={{ flex: 1, backgroundColor: '#F9F0DE' }}>
+    
       <View style={styles.bannerContainer}>
         <Image
           source={require('../../assets/images/banner.webp')}
