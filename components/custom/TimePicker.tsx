@@ -64,7 +64,7 @@ const styles = StyleSheet.create({
     marginBottom: 10,
   },
   label: {
-    fontSize: 14,
+    fontSize: 20,
     fontWeight: '500',
     color: '#4A4A4A',
     marginBottom: 5,
@@ -80,7 +80,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   timeText: {
-    fontSize: 16,
+    fontSize: 20,
     color: 'black',
   },
   modalContainer: {

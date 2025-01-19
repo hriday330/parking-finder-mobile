@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from "react";
-import { View, Text, ScrollView, TextInput, Button, FlatList, TouchableOpacity, Alert } from "react-native";
+import { View, Text, ScrollView, TextInput, Button, FlatList, TouchableOpacity, Alert, StyleSheet, Image } from "react-native";
 import MapView, { Marker } from "react-native-maps";
 import TimePicker from "@/components/custom/TimePicker"; // Custom TimePicker component
 import SearchBar from "@/components/custom/SearchBar";
@@ -179,9 +179,16 @@ const PlanTrip = () => {
   };
 
   return (
-    <ScrollView style={{ flex: 1, paddingHorizontal: 18, paddingTop: 56, backgroundColor: '#FCECAB' }}>
-      <View style={{ marginBottom: 16 }}>
-        <Text style={{ fontSize: 24, fontWeight: "bold" }}>Destination</Text>
+    <ScrollView style={{ flex: 1, backgroundColor: '#F9F0DE' }}>
+      <View style={styles.bannerContainer}>
+        <Image
+          source={require('../../assets/images/banner.webp')}
+          style={styles.bannerImage}
+          resizeMode="cover"
+        />
+      </View>
+      <View style={{ marginBottom: 16, paddingHorizontal: 18, paddingTop: 36}}>
+        <Text style={{ fontSize: 36, paddingVertical: 6,fontWeight: "bold" }}>Destination</Text>
         <SearchBar
               value={searchItem}
               onSearch={handleSearch}
@@ -203,13 +210,13 @@ const PlanTrip = () => {
         )}
       </View>
 
-      <View style={{ flexDirection: "row", justifyContent: "space-between" }}>
+      <View style={{ flexDirection: "row", justifyContent: "space-between", paddingHorizontal: 18, paddingTop: 36 }}>
         <TimePicker value={startTime} onChange={setStartTime} label="Depart at" />
         <TimePicker value={endTime} onChange={setEndTime} label="Arrive at" />
       </View>
 
       <MapView
-        style={{ height: 300 }}
+        style={{ height: 300, paddingHorizontal: 14, paddingTop: 16, }}
         region={mapRegion}
         onRegionChangeComplete={setMapRegion}
       >
@@ -229,33 +236,71 @@ const PlanTrip = () => {
 
       {selectedParkingLot && (
         <View
+        style={{
+          marginTop: 16,
+          padding: 16,
+          backgroundColor: "#f9f9f9",
+          borderRadius: 12,
+          borderWidth: 1,
+          borderColor: "#ddd",
+          shadowColor: "#000",
+          shadowOffset: { width: 0, height: 2 },
+          shadowOpacity: 0.1,
+          shadowRadius: 4,
+          elevation: 3,
+        }}
+      >
+        <Text
           style={{
-            marginTop: 16,
-            padding: 16,
-            backgroundColor: "white",
-            borderRadius: 8,
-            borderWidth: 1,
-            borderColor: "gray",
+            fontSize: 24,
+            fontWeight: "bold",
+            color: "#333",
+            marginBottom: 12,
           }}
         >
-          <Text style={{ fontSize: 24, fontWeight: "bold" }}>
-            {selectedParkingLot.name}
+          {selectedParkingLot.name}
+        </Text>
+        <Text style={{ fontSize: 16, color: "#555", marginBottom: 8 }}>
+          ⏰ Time In Effect: <Text style={{ fontWeight: "bold", color: "#000" }}>{selectedParkingLot.timeInEffect}</Text>
+        </Text>
+        <Text style={{ fontSize: 16, color: "#555", marginBottom: 8 }}>
+          📍 Distance: <Text style={{ fontWeight: "bold", color: "#000" }}>{selectedParkingLot.distance}</Text>
+        </Text>
+        <Text style={{ fontSize: 16, color: "#555", marginBottom: 8 }}>
+          🏠 Address: <Text style={{ fontWeight: "bold", color: "#000" }}>{selectedParkingLot.address}</Text>
+        </Text>
+        <Text style={{ fontSize: 18, fontWeight: "bold", color: "#333", marginBottom: 12 }}>
+          💵 Rates:
+        </Text>
+        {selectedParkingLot.rates.map((rate, index) => (
+          <Text
+            key={index}
+            style={{
+              fontSize: 16,
+              color: "#555",
+              marginBottom: 6,
+              paddingLeft: 8,
+            }}
+          >
+            • {rate.type}: <Text style={{ fontWeight: "bold", color: "#000" }}>{rate.rate}</Text>
           </Text>
-          <Text style={{ marginVertical: 8 }}>
-            Time In Effect: {selectedParkingLot.timeInEffect}
+        ))}
+        <TouchableOpacity
+          style={{
+            marginTop: 16,
+            backgroundColor: "#007AFF",
+            padding: 12,
+            borderRadius: 8,
+            alignItems: "center",
+          }}
+          onPress={() => {}}
+        >
+          <Text style={{ fontSize: 16, fontWeight: "600", color: "white" }}>
+            Let’s go!
           </Text>
-          <Text style={{ marginVertical: 8 }}>
-            Distance: {selectedParkingLot.distance}
-          </Text>
-          <Text style={{ marginVertical: 8 }}>Address: {selectedParkingLot.address}</Text>
-          <Text style={{ marginVertical: 8, fontWeight: "bold" }}>Rates:</Text>
-          {selectedParkingLot.rates.map((rate, index) => (
-            <Text key={index} style={{ marginVertical: 4 }}>
-              {rate.type}: {rate.rate}
-            </Text>
-          ))}
-          <Button title="Let's go!" onPress={() => {}} />
-        </View>
+        </TouchableOpacity>
+      </View>
+      
       )}
     </ScrollView>
   );
@@ -283,3 +328,15 @@ const haversineDistance = (coord1: [number, number], coord2: [number, number]) =
   
   return R * c; // Distance in kilometers
 };
+
+const styles = StyleSheet.create(
+  {
+    bannerContainer: {
+      width: '100%',
+      height: 200,
+  },
+    bannerImage: {
+      width: '100%',
+      height: '100%',
+  },}
+)

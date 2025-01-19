@@ -58,11 +58,17 @@ const Location = () => {
 
   return (
     <ScrollView style={styles.container}>
-      <View style={styles.content}>
-        <View style={styles.mascotContainer}>
-          
-        </View>
+      {/* Banner Section */}
+      <View style={styles.bannerContainer}>
+        <Image
+          source={require('../assets/images/banner.webp')}
+          style={styles.bannerImage}
+          resizeMode="cover"
+        />
+      </View>
 
+      {/* Content Section */}
+      <View style={styles.content}>
         <View style={styles.mainContent}>
           <Text style={styles.title}>Where do you want to go?</Text>
           
@@ -78,15 +84,6 @@ const Location = () => {
               />
             ))}
           </View>
-
-          <TouchableOpacity 
-            style={styles.button}
-            onPress={() => {
-              console.log('Navigate to plan trip');
-            }}
-          >
-            <Text style={styles.buttonText}>Are you looking elsewhere?</Text>
-          </TouchableOpacity>
         </View>
       </View>
     </ScrollView>
@@ -94,25 +91,24 @@ const Location = () => {
 };
 
 const { width } = Dimensions.get('window');
-const cardWidth = (width - 48) / 3;
+const cardWidth = (width - 48) / 2;
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    paddingTop: 50,
-    backgroundColor: '#FCECAB'
+    backgroundColor: '#F9F0DE'
+  },
+  bannerContainer: {
+    width: '100%',
+    height: 200,
+  },
+  bannerImage: {
+    width: '100%',
+    height: '100%',
   },
   content: {
     flexDirection: 'column',
     padding: 16,
-  },
-  mascotContainer: {
-    marginRight: 16,
-  },
-  mascotImage: {
-    width: 64,
-    height: 200,
-    marginTop: 20,
   },
   mainContent: {
     flex: 1,
@@ -125,7 +121,7 @@ const styles = StyleSheet.create({
   grid: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    justifyContent: 'space-between',
+    justifyContent: 'space-evenly',
     gap: 16,
   },
   card: {

@@ -39,6 +39,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: "#3498db",
     borderRadius: 8,
+    backgroundColor: 'white',
     flex: 1,
     marginRight: 10,
     fontSize: 16,
@@ -52,7 +53,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   buttonText: {
-    color: "white",
+    color: "black",
     fontSize: 16,
   },
 });
