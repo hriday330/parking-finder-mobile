@@ -1,109 +1,268 @@
-import { StyleSheet, Image, Platform } from 'react-native';
+import React, { useEffect, useRef, useState } from "react";
+import { View, Text, TextInput, Button, FlatList, TouchableOpacity, Alert } from "react-native";
+import MapView, { Marker } from "react-native-maps";
+import TimePicker from "@/components/custom/TimePicker"; // Custom TimePicker component
+import SearchBar from "@/components/custom/SearchBar";
 
-import { Collapsible } from '@/components/Collapsible';
-import { ExternalLink } from '@/components/ExternalLink';
-import ParallaxScrollView from '@/components/ParallaxScrollView';
-import { ThemedText } from '@/components/ThemedText';
-import { ThemedView } from '@/components/ThemedView';
-import { IconSymbol } from '@/components/ui/IconSymbol';
+const YOUR_MAPBOX_ACCESS_TOKEN = "pk.eyJ1IjoiaHJpZGF5MzMwIiwiYSI6ImNtNjJ5bDJxYjEyaWMybm9rYW5hbGtsam0ifQ.sjy7xcIkwP1i4vPum4M_1g";
+const PlanTrip = () => {
+  const [searchItem, setSearchItem] = useState("");
+  const [startTime, setStartTime] = useState("12:00");
+  const [endTime, setEndTime] = useState("12:00");
+  const [suggestions, setSuggestions] = useState([]);
+  const [mapRegion, setMapRegion] = useState({
+    latitude: 49.26517,
+    longitude: -123.16652,
+    latitudeDelta: 0.0922,
+    longitudeDelta: 0.0421,
+  });
+  const [parkingLotMarkers, setParkingLotMarkers] = useState([]);
+  const [parkingLots, setParkingLots] = useState([]);
+  const [selectedParkingLot, setSelectedParkingLot] = useState(null);
 
-export default function TabTwoScreen() {
+  const debounce = (func: (...args: any[]) => void, delay: number) => {
+    let timer: NodeJS.Timeout;
+    return (...args: any[]) => {
+      clearTimeout(timer);
+      timer = setTimeout(() => func(...args), delay);
+    };
+  };
+
+  const handleParkingLotClick = (lot: any) => {
+    const { coordinates } = lot;
+    // const address = await getAddressFromCoordinates(coordinates[0], coordinates[1]);
+    setSelectedParkingLot(lot);
+  };
+
+  const fetchSuggestions = debounce(async (query: string) => {
+    if (!query.trim()) {
+      setSuggestions([]);
+      return;
+    }
+
+    try {
+      const response = await fetch(
+        `https://api.mapbox.com/geocoding/v5/mapbox.places/${encodeURIComponent(
+          query
+        )}.json?access_token=${YOUR_MAPBOX_ACCESS_TOKEN}&autocomplete=true&limit=5`
+      );
+      const data = await response.json();
+      setSuggestions(data.features || []);
+    } catch (error) {
+      console.error("Error fetching suggestions:", error);
+    }
+  }, 300);
+
+  const fetchParkingLots = async (center: [number, number]) => {
+    setParkingLotMarkers([]);
+
+    try {
+      const response = await fetch(
+        `https://opendata.vancouver.ca/api/records/1.0/search/?dataset=parking-meters&geofilter.distance=${center[1]},${center[0]},2000`
+      );
+      const data = await response.json();
+
+      if (data.records && data.records.length > 0) {
+        const closestParkingLots = data.records
+          .slice(0, 5)
+          .map((record: any) => ({
+            coordinates: record.fields.geom.coordinates,
+            distance: `${haversineDistance(center, record.fields.geom.coordinates).toFixed(1)} km`,
+            name: record.fields.meter_id || "Parking Meter",
+            rates: [
+              { type: "Mon-Fri 9a-6p", rate: record.fields.r_mf_9a_6p },
+              { type: "Sat 9a-6p", rate: record.fields.r_sa_9a_6p },
+              { type: "Mon-Fri 6p-10p", rate: record.fields.r_mf_6p_10 },
+              { type: "Sat 6p-10p", rate: record.fields.r_sa_6p_10 },
+              { type: "Sun 9a-6p", rate: record.fields.r_su_9a_6p },
+            ],
+            timeInEffect: record.fields.timeineffe,
+            address: record.fields.geo_local_area,
+          }));
+
+        setParkingLots(closestParkingLots);
+      }
+    } catch (error) {
+      console.error("Error fetching parking lots:", error);
+    }
+  };
+
+  const handleSearchChange = (value: string) => {
+    setSearchItem(value);
+    fetchSuggestions(value);
+  };
+
+  const handleSearch = async () => {
+    if (!searchItem.trim()) return;
+
+    try {
+      const response = await fetch(
+        `https://api.mapbox.com/geocoding/v5/mapbox.places/${encodeURIComponent(
+          searchItem
+        )}.json?access_token=${YOUR_MAPBOX_ACCESS_TOKEN}`
+      );
+      const data = await response.json();
+
+      if (data.features && data.features.length > 0) {
+        const { center, place_name } = data.features[0];
+        setMapRegion({
+          ...mapRegion,
+          latitude: center[1],
+          longitude: center[0],
+        });
+
+        await fetchParkingLots(center);
+      } else {
+        Alert.alert("Location not found");
+      }
+    } catch (error) {
+      console.error("Error fetching location:", error);
+    }
+  };
+
+  const handleSuggestionClick = (suggestion: any) => {
+    const { center, place_name } = suggestion;
+
+    setSearchItem(place_name);
+    setSuggestions([]);
+
+    setMapRegion({
+      ...mapRegion,
+      latitude: center[1],
+      longitude: center[0],
+    });
+
+    fetchParkingLots(center);
+  };
+
+  useEffect(() => {
+    if (mapRegion.latitude && mapRegion.longitude) {
+      fetchParkingLots([mapRegion.latitude, mapRegion.longitude]);
+    }
+  }, [mapRegion]);
+
+  const getAddressFromCoordinates = async (longitude: number, latitude: number) => {
+    const url = `https://api.mapbox.com/geocoding/v5/mapbox.places/${longitude},${latitude}.json?access_token=${mapboxgl.accessToken}`;
+  
+    try {
+      const response = await fetch(url);
+      const data = await response.json();
+  
+      if (data.features && data.features.length > 0) {
+        const address = data.features[0].place_name;
+        return address;
+      } else {
+        return null;
+      }
+    } catch (error) {
+      console.error("Error fetching address:", error);
+      return null;
+    }
+  };
+
   return (
-    <ParallaxScrollView
-      headerBackgroundColor={{ light: '#D0D0D0', dark: '#353636' }}
-      headerImage={
-        <IconSymbol
-          size={310}
-          color="#808080"
-          name="chevron.left.forwardslash.chevron.right"
-          style={styles.headerImage}
-        />
-      }>
-      <ThemedView style={styles.titleContainer}>
-        <ThemedText type="title">Explore</ThemedText>
-      </ThemedView>
-      <ThemedText>This app includes example code to help you get started.</ThemedText>
-      <Collapsible title="File-based routing">
-        <ThemedText>
-          This app has two screens:{' '}
-          <ThemedText type="defaultSemiBold">app/(tabs)/index.tsx</ThemedText> and{' '}
-          <ThemedText type="defaultSemiBold">app/(tabs)/explore.tsx</ThemedText>
-        </ThemedText>
-        <ThemedText>
-          The layout file in <ThemedText type="defaultSemiBold">app/(tabs)/_layout.tsx</ThemedText>{' '}
-          sets up the tab navigator.
-        </ThemedText>
-        <ExternalLink href="https://docs.expo.dev/router/introduction">
-          <ThemedText type="link">Learn more</ThemedText>
-        </ExternalLink>
-      </Collapsible>
-      <Collapsible title="Android, iOS, and web support">
-        <ThemedText>
-          You can open this project on Android, iOS, and the web. To open the web version, press{' '}
-          <ThemedText type="defaultSemiBold">w</ThemedText> in the terminal running this project.
-        </ThemedText>
-      </Collapsible>
-      <Collapsible title="Images">
-        <ThemedText>
-          For static images, you can use the <ThemedText type="defaultSemiBold">@2x</ThemedText> and{' '}
-          <ThemedText type="defaultSemiBold">@3x</ThemedText> suffixes to provide files for
-          different screen densities
-        </ThemedText>
-        <Image source={require('@/assets/images/react-logo.png')} style={{ alignSelf: 'center' }} />
-        <ExternalLink href="https://reactnative.dev/docs/images">
-          <ThemedText type="link">Learn more</ThemedText>
-        </ExternalLink>
-      </Collapsible>
-      <Collapsible title="Custom fonts">
-        <ThemedText>
-          Open <ThemedText type="defaultSemiBold">app/_layout.tsx</ThemedText> to see how to load{' '}
-          <ThemedText style={{ fontFamily: 'SpaceMono' }}>
-            custom fonts such as this one.
-          </ThemedText>
-        </ThemedText>
-        <ExternalLink href="https://docs.expo.dev/versions/latest/sdk/font">
-          <ThemedText type="link">Learn more</ThemedText>
-        </ExternalLink>
-      </Collapsible>
-      <Collapsible title="Light and dark mode components">
-        <ThemedText>
-          This template has light and dark mode support. The{' '}
-          <ThemedText type="defaultSemiBold">useColorScheme()</ThemedText> hook lets you inspect
-          what the user's current color scheme is, and so you can adjust UI colors accordingly.
-        </ThemedText>
-        <ExternalLink href="https://docs.expo.dev/develop/user-interface/color-themes/">
-          <ThemedText type="link">Learn more</ThemedText>
-        </ExternalLink>
-      </Collapsible>
-      <Collapsible title="Animations">
-        <ThemedText>
-          This template includes an example of an animated component. The{' '}
-          <ThemedText type="defaultSemiBold">components/HelloWave.tsx</ThemedText> component uses
-          the powerful <ThemedText type="defaultSemiBold">react-native-reanimated</ThemedText>{' '}
-          library to create a waving hand animation.
-        </ThemedText>
-        {Platform.select({
-          ios: (
-            <ThemedText>
-              The <ThemedText type="defaultSemiBold">components/ParallaxScrollView.tsx</ThemedText>{' '}
-              component provides a parallax effect for the header image.
-            </ThemedText>
-          ),
-        })}
-      </Collapsible>
-    </ParallaxScrollView>
-  );
-}
+    <View style={{ flex: 1, padding: 16, backgroundColor: 'white' }}>
+      <View style={{ marginBottom: 16 }}>
+        <Text style={{ fontSize: 24, fontWeight: "bold" }}>Destination</Text>
+        <SearchBar
+              value={searchItem}
+              onSearch={handleSearch}
+              onChange={handleSearchChange}
+              placeholder="Where do you want to go?"
+            />
+        {suggestions.length > 0 && (
+          <FlatList
+            data={suggestions}
+            renderItem={({ item }: any) => (
+              <TouchableOpacity onPress={() => handleSuggestionClick(item)}>
+                <Text style={{ padding: 8, borderBottomWidth: 1 }}>
+                  {item.place_name}
+                </Text>
+              </TouchableOpacity>
+            )}
+            keyExtractor={(item, index) => index.toString()}
+          />
+        )}
+      </View>
 
-const styles = StyleSheet.create({
-  headerImage: {
-    color: '#808080',
-    bottom: -90,
-    left: -35,
-    position: 'absolute',
-  },
-  titleContainer: {
-    flexDirection: 'row',
-    gap: 8,
-  },
-});
+      <View style={{ flexDirection: "row", justifyContent: "space-between" }}>
+        <TimePicker value={startTime} onChange={setStartTime} label="Depart at" />
+        <TimePicker value={endTime} onChange={setEndTime} label="Arrive at" />
+      </View>
+
+      <MapView
+        style={{ height: 300, marginTop: 16 }}
+        region={mapRegion}
+        onRegionChangeComplete={setMapRegion}
+      >
+        {parkingLots.map((lot, index) => (
+          <Marker
+            key={index}
+            coordinate={{
+              latitude: lot.coordinates[1],
+              longitude: lot.coordinates[0],
+            }}
+            title={lot.name}
+            description={`Distance: ${lot.distance}`}
+            onPress={() => handleParkingLotClick(lot)}
+          />
+        ))}
+      </MapView>
+
+      {selectedParkingLot && (
+        <View
+          style={{
+            marginTop: 16,
+            padding: 16,
+            backgroundColor: "white",
+            borderRadius: 8,
+            borderWidth: 1,
+            borderColor: "gray",
+          }}
+        >
+          <Text style={{ fontSize: 24, fontWeight: "bold" }}>
+            {selectedParkingLot.name}
+          </Text>
+          <Text style={{ marginVertical: 8 }}>
+            Time In Effect: {selectedParkingLot.timeInEffect}
+          </Text>
+          <Text style={{ marginVertical: 8 }}>
+            Distance: {selectedParkingLot.distance}
+          </Text>
+          <Text style={{ marginVertical: 8 }}>Address: {selectedParkingLot.address}</Text>
+          <Text style={{ marginVertical: 8, fontWeight: "bold" }}>Rates:</Text>
+          {selectedParkingLot.rates.map((rate, index) => (
+            <Text key={index} style={{ marginVertical: 4 }}>
+              {rate.type}: {rate.rate}
+            </Text>
+          ))}
+          <Button title="Let's go!" onPress={() => {}} />
+        </View>
+      )}
+      <Text>{selectedParkingLot ? 'yes' : 'no'}</Text>
+    </View>
+  );
+};
+
+export default PlanTrip;
+
+
+const haversineDistance = (coord1: [number, number], coord2: [number, number]) => {
+  const R = 6371; // Radius of Earth in km
+  const [lat1, lon1] = coord1;
+  const [lat2, lon2] = coord2;
+
+  const toRad = (degree: number) => (degree * Math.PI) / 180;
+
+  const dLat = toRad(lat2 - lat1);
+  const dLon = toRad(lon2 - lon1);
+
+  const a =
+    Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+    Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) *
+    Math.sin(dLon / 2) * Math.sin(dLon / 2);
+
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+  
+  return R * c; // Distance in kilometers
+};
