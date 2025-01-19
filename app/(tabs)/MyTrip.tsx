@@ -53,41 +53,71 @@ const PlanTrip = () => {
 
   const fetchParkingLots = async (center: [number, number]) => {
     setParkingLotMarkers([]);
-
+  
+    const isNearCampus = (lat: number, lng: number, campus: { name: string; coords: [number, number] }, radius: number) => {
+      const distance = haversineDistance([lng, lat], campus.coords);
+      return distance <= radius;
+    };
+  
+    // Define UBC and SFU campus coordinates
+    const campuses = [
+      { name: "UBC", coords: [49.2606, -123.2460] }, // UBC
+      { name: "SFU", coords: [49.2796, -122.9199] }, // SFU
+    ];
+  
+    const nearCampus = campuses.find((campus) =>
+      isNearCampus(center[1], center[0], campus, 2) // Within 2 km of the campus
+    );
+  
     try {
+      if (nearCampus) {
+        console.log(`Center is near ${nearCampus.name}, calling our own API to get live data`);
+        const customAPI = `OUR_URL`;
+        
+        // Fetch Mapbox API response
+        const response = await fetch(customAPI);
+        const data = await response.json();
+        // Handle Mapbox data as needed (template for now)
+        console.log("Mapbox API data:", data);
+        return; // Exit early as we've handled the alternative API
+      }
+  
+      // Otherwise, call the default Vancouver parking meters API
       const response = await fetch(
         `https://opendata.vancouver.ca/api/records/1.0/search/?dataset=parking-meters&geofilter.distance=${center[1]},${center[0]},2000`
       );
+  
       const data = await response.json();
-
+  
       if (data.records && data.records.length > 0) {
-        const closestFive = data.records.slice(0,5);
-        const addresses = await Promise.all(closestFive.map(async (item:any) => {
-          const {coordinates} = item.fields.geom;
-          const addr = await getAddressFromCoordinates(coordinates[0], coordinates[1]);
-          return addr;
+        const closestFive = data.records.slice(0, 5);
+        const addresses = await Promise.all(
+          closestFive.map(async (item: any) => {
+            const { coordinates } = item.fields.geom;
+            const addr = await getAddressFromCoordinates(coordinates[0], coordinates[1]);
+            return addr;
+          })
+        );
+        const closestParkingLots = closestFive.map((record: any, index: number) => ({
+          coordinates: record.fields.geom.coordinates,
+          distance: `${haversineDistance(center, record.fields.geom.coordinates).toFixed(1)} km`,
+          name: record.fields.meter_id || "Parking Meter",
+          rates: [
+            { type: "Mon-Fri 9a-6p", rate: record.fields.r_mf_9a_6p },
+            { type: "Sat 9a-6p", rate: record.fields.r_sa_9a_6p },
+            { type: "Mon-Fri 6p-10p", rate: record.fields.r_mf_6p_10 },
+            { type: "Sat 6p-10p", rate: record.fields.r_sa_6p_10 },
+            { type: "Sun 9a-6p", rate: record.fields.r_su_9a_6p },
+          ],
+          timeInEffect: record.fields.timeineffe,
+          address: addresses[index],
         }));
-        const closestParkingLots = closestFive
-          .map((record: any, index: number) => ({
-            coordinates: record.fields.geom.coordinates,
-            distance: `${haversineDistance(center, record.fields.geom.coordinates).toFixed(1)} km`,
-            name: record.fields.meter_id || "Parking Meter",
-            rates: [
-              { type: "Mon-Fri 9a-6p", rate: record.fields.r_mf_9a_6p },
-              { type: "Sat 9a-6p", rate: record.fields.r_sa_9a_6p },
-              { type: "Mon-Fri 6p-10p", rate: record.fields.r_mf_6p_10 },
-              { type: "Sat 6p-10p", rate: record.fields.r_sa_6p_10 },
-              { type: "Sun 9a-6p", rate: record.fields.r_su_9a_6p },
-            ],
-            timeInEffect: record.fields.timeineffe,
-            address: addresses[index]
-          }));
-
+  
         setParkingLots(closestParkingLots);
       }
     } catch (error) {
       console.error("Error fetching parking lots:", error);
-    }
+    }  
   };
 
   const handleSearchChange = (value: string) => {

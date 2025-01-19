@@ -40,17 +40,17 @@ const Location = () => {
       imageSrc: require('../assets/images/ubc.jpg')
     },
     { 
-      name: 'Richmond', 
+      name: 'Shaughnessy', 
       link: '/', 
       imageSrc: require('../assets/images/richmond.webp')
     },
     { 
-      name: 'Burnaby', 
+      name: 'Kerrisdale', 
       link: '/', 
       imageSrc: require('../assets/images/burnaby.jpg')
     },
     { 
-      name: 'Coquitlam', 
+      name: 'Renfrew', 
       link: '/', 
       imageSrc: require('../assets/images/coquitlam.jpg')
     },
@@ -70,7 +70,7 @@ const Location = () => {
       {/* Content Section */}
       <View style={styles.content}>
         <View style={styles.mainContent}>
-          <Text style={styles.title}>Where do you want to go?</Text>
+          <Text style={styles.title}>Locations we serve</Text>
           
           <View style={styles.grid}>
             {locations.map((location) => (
