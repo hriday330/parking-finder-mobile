@@ -67,21 +67,32 @@ const PlanTrip = () => {
       // { name: "SFU", coords: [49.2796, -122.9199] }, // SFU
     ];
   
+    let closestParkingLots:any[];
     const nearCampus = campuses.find((campus) =>
       isNearCampus(center[1], center[0], campus, 2) // Within 2 km of the campus
     );
-  
+    
     try {
       if (nearCampus) {
         console.log(`Center is near ${nearCampus.name}, calling our own API to get live data`);
-        const customAPI = `http://127.0.0.1:8000/parking/ubc`;
+        setTimeout(() => {
+        }, 400);
         
-        // Fetch Mapbox API response
-        const response = await fetch(customAPI);
-        const data = await response.json();
-        // Handle Mapbox data as needed (template for now)
-        console.log("custom API data:", data);
-        return; // Exit early as we've handled the alternative API
+        closestParkingLots = [{
+          coordinates: [center[0], center[1]],
+          spaces: 8 ?? 'Space data not available for this lot', 
+          distance: `0.3km`,
+          name: "Demo parking lot",
+          rates: [
+            { type: "Mon-Fri 9a-6p", rate: "$4/hr"},
+            { type: "Sat 9a-6p", rate: "$4/hr"},
+            { type: "Mon-Fri 6p-10p", rate: "$4/hr"},
+            { type: "Sat 6p-10p", rate: "$4/hr" },
+            { type: "Sun 9a-6p", rate: "$4/hr" },
+          ],
+          timeInEffect: '9am-6pm',
+          address:'UBC'
+        }];
       }
   
       // Otherwise, call the default Vancouver parking meters API
@@ -114,7 +125,7 @@ const PlanTrip = () => {
             return addr;
           })
         );
-        const closestParkingLots = closestFive.map((record: any, index: number) => ({
+        closestParkingLots = closestFive.map((record: any, index: number) => ({
           coordinates: record.fields.geom.coordinates,
           spaces: record.fields?.spaces ?? 'Space data not available for this lot', 
           distance: `${haversineDistance(center, record.fields.geom.coordinates).toFixed(1)} km`,
