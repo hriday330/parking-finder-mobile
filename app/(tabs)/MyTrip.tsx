@@ -87,9 +87,9 @@ const PlanTrip = () => {
       // Otherwise, call the default Vancouver parking meters API
       let vancouverDataSource;
       if (selectedSearch === "disabled") {
-        vancouverDataSource = 'disabled URL'
+        vancouverDataSource = `https://opendata.vancouver.ca/api/records/1.0/search/?dataset=disability-parking&geofilter.distance=${center[1]},${center[0]},2000`
       } else if (selectedSearch === "motorcycles") {
-        vancouverDataSource = 'motorcycles URL'
+        vancouverDataSource = `https://opendata.vancouver.ca/api/records/1.0/search/?dataset=motorcycle-parking&geofilter.distance=${center[1]},${center[0]},2000`
       } else {
         vancouverDataSource = `https://opendata.vancouver.ca/api/records/1.0/search/?dataset=parking-meters&geofilter.distance=${center[1]},${center[0]},2000`
       }
@@ -99,12 +99,18 @@ const PlanTrip = () => {
   
       const data = await response.json();
   
+    
       if (data.records && data.records.length > 0) {
         const closestFive = data.records.slice(0, 5);
         const addresses = await Promise.all(
           closestFive.map(async (item: any) => {
             const { coordinates } = item.fields.geom;
-            const addr = await getAddressFromCoordinates(coordinates[0], coordinates[1]);
+            let addr;
+            if (item.fields?.location) {
+              addr = item.fields.location;
+            } else {
+              addr = await getAddressFromCoordinates(coordinates[0], coordinates[1]);
+            }
             return addr;
           })
         );
@@ -122,11 +128,13 @@ const PlanTrip = () => {
           timeInEffect: record.fields.timeineffe,
           address: addresses[index],
         }));
+
+        console.log(closestParkingLots)
   
         setParkingLots(closestParkingLots);
       }
     } catch (error) {
-      console.error("Error fetching parking lots:", error);
+      console.error(error);
     }  
   };
 
