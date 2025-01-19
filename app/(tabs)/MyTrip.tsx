@@ -1,8 +1,9 @@
 import React, { useEffect, useRef, useState } from "react";
 import { View, Text, ScrollView, TextInput, Button, FlatList, TouchableOpacity, Alert, StyleSheet, Image } from "react-native";
 import MapView, { Marker } from "react-native-maps";
-import TimePicker from "@/components/custom/TimePicker"; // Custom TimePicker component
+import TimePicker from "@/components/custom/TimePicker";
 import SearchBar from "@/components/custom/SearchBar";
+import IconButton from "@/components/ui/IconButton";
 
 const YOUR_MAPBOX_ACCESS_TOKEN = "pk.eyJ1IjoiaHJpZGF5MzMwIiwiYSI6ImNtNjJ5bDJxYjEyaWMybm9rYW5hbGtsam0ifQ.sjy7xcIkwP1i4vPum4M_1g";
 const PlanTrip = () => {
@@ -242,8 +243,9 @@ const PlanTrip = () => {
       </View>
 
       <View style={{ flexDirection: "row", justifyContent: "space-between", paddingHorizontal: 18, paddingTop: 36 }}>
-        <TimePicker value={startTime} onChange={setStartTime} label="Depart at" />
-        <TimePicker value={endTime} onChange={setEndTime} label="Arrive at" />
+        <IconButton image={require('../../assets/images/handicap.webp')} />
+        <IconButton image={require('../../assets/images/motorcycles.webp')} />
+        <IconButton image={require('../../assets/images/cars.webp')} />
       </View>
 
       <MapView
